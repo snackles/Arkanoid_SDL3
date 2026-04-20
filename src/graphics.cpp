@@ -1,13 +1,19 @@
 #include "../include/arkanoid.hpp"
 
 void renderGame(GameData &game){
+	if (game.renderer == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "renderGame: renderer is nullptr!\n");
+        return;
+    }
+	
 	SDL_SetRenderDrawColor(game.renderer, 
 						   COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, 
 						   COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
     SDL_RenderClear(game.renderer);
-	initTextures(game);
+
 	drawBoard(game);
 	drawWalls(game);
+	drawPlatform(game);
 
 	SDL_RenderPresent(game.renderer);
 }
@@ -47,3 +53,14 @@ void drawWalls(GameData &game){
 	};
 	SDL_RenderTexture(game.renderer, game.textures.walls, NULL, &right_wall);
 }
+
+void drawPlatform(GameData &game){
+	SDL_FRect platform{
+		game.platform.position,
+		WINDOW_HEIGHT - (PLATFORM_HEIGHT * BLOCK_SIZE),
+		PLATFORM_WIDTH * BLOCK_SIZE,
+		PLATFORM_HEIGHT * BLOCK_SIZE
+	};
+	SDL_RenderTexture(game.renderer, game.textures.platform, NULL, &platform);
+}
+

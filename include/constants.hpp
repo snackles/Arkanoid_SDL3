@@ -10,7 +10,13 @@ enum BlockType{
 	BASE,
 	DOUBLE_SHOT,
 	STRONG,
-	PLATFORM
+};
+
+enum GameState{
+	STATE_MENU,
+    STATE_PLAYING,
+    STATE_PAUSED,
+    STATE_GAME_OVER
 };
 // Window settings
 constexpr int WINDOW_WIDTH = 600;
@@ -24,6 +30,9 @@ constexpr int BOARD_OFFSET_Y = 130;
 
 constexpr int BLOCK_SIZE = 10;
 constexpr int WALL_WIDTH = 30;
+
+constexpr int PLATFORM_WIDTH = 8;
+constexpr int PLATFORM_HEIGHT = 4;
 
 constexpr int UI_WIDHT = 600;
 constexpr int UI_HEIGHT = 100;
