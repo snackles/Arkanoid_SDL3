@@ -1,0 +1,50 @@
+[
+  {
+    "file": "../src/main.cpp",
+    "arguments": [
+      "clang++",
+      "-std=c++23",
+      "-Wall",
+      "-Wextra",
+      "-I/opt/homebrew/include",
+      "-Isrc",
+      "../src/main.cpp",
+      "-o",
+      "macGame"
+    ],
+    "directory": "/Users/alina/Documents/Программирование/Arkanoid_SDL3/makefiles",
+    "output": "macGame"
+  },
+  {
+    "file": "../src/arkanoid.cpp",
+    "arguments": [
+      "clang++",
+      "-std=c++23",
+      "-Wall",
+      "-Wextra",
+      "-I/opt/homebrew/include",
+      "-Isrc",
+      "../src/arkanoid.cpp",
+      "-o",
+      "macGame"
+    ],
+    "directory": "/Users/alina/Documents/Программирование/Arkanoid_SDL3/makefiles",
+    "output": "macGame"
+  },
+  {
+    "file": "../src/graphics.cpp",
+    "arguments": [
+      "clang++",
+      "-std=c++23",
+      "-Wall",
+      "-Wextra",
+      "-I/opt/homebrew/include",
+      "-Isrc",
+      "../src/graphics.cpp",
+      "-o",
+      "macGame"
+    ],
+    "directory": "/Users/alina/Documents/Программирование/Arkanoid_SDL3/makefiles",
+    "output": "macGame"
+  }
+]
