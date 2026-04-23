@@ -46,5 +46,21 @@
     ],
     "directory": "/Users/alina/Documents/Программирование/Arkanoid_SDL3/makefiles",
     "output": "macGame"
+  },
+  {
+    "file": "../src/input.cpp",
+    "arguments": [
+      "clang++",
+      "-std=c++23",
+      "-Wall",
+      "-Wextra",
+      "-I/opt/homebrew/include",
+      "-Isrc",
+      "../src/input.cpp",
+      "-o",
+      "macGame"
+    ],
+    "directory": "/Users/alina/Documents/Программирование/Arkanoid_SDL3/makefiles",
+    "output": "macGame"
   }
 ]

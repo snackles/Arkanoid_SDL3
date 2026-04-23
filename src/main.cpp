@@ -3,18 +3,15 @@
 int main(){
 
 	GameData game;
-	bool done = false;
 
 	initGame(game);
-
-	while (!done) {
-		renderGame(game);	
-        SDL_Event event;		
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                done = true;
-            }
-        }
+	game.last_time = SDL_GetTicks();
+	while (game.is_running) {			
+		Uint32 current_time = SDL_GetTicks();
+		game.delta_time = (current_time - game.last_time) / 1000.0f;
+		game.last_time = current_time;;
+		processEvent(game);
+		renderGame(game);
 	}
 
 	destroyObjects(game);

@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++23 -Wall -Wextra -I/opt/homebrew/include -Isrc
 LDFLAGS = -L/opt/homebrew/lib -lSDL3 -lSDL3_ttf -lSDL3_image
 
 TARGET = macGame
-SOURCES = ../src/main.cpp ../src/arkanoid.cpp ../src/graphics.cpp
+SOURCES = ../src/main.cpp ../src/arkanoid.cpp ../src/graphics.cpp ../src/input.cpp
 HEADERS = ../include/arkanoid.hpp ../include/constants.hpp
 
 all: $(TARGET)

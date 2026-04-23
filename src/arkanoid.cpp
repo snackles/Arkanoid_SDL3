@@ -3,7 +3,7 @@
 #include "SDL3_image/SDL_image.h"
 
 bool initGame(GameData &game){
-	SDL_Init(SDL_INIT_VIDEO);	
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);	
 
 	game.window = SDL_CreateWindow(
 		"Arkanoid",
@@ -24,6 +24,10 @@ bool initGame(GameData &game){
 	game.board.height = BOARD_HEIGHT;
 
 	game.platform.position = ((BOARD_WIDTH * BLOCK_SIZE) / 2) - ((PLATFORM_WIDTH * BLOCK_SIZE) / 2) + WALL_WIDTH;
+
+	game.game_over = false;
+	game.is_paused = false;
+	game.is_running = true;
 
 	return true;
 }
@@ -54,4 +58,23 @@ Platform createPlatform(){
 	Platform platform;
 	platform.position = (BOARD_WIDTH / 2) - (PLATFORM_WIDTH / 2);
 	return platform;
+}
+
+bool movePlatform(Platform &platform, int dx) {
+	Platform test_platform = platform;
+	test_platform.position += dx * BLOCK_SIZE;
+
+	if(!checkCollision(test_platform)){
+		platform = test_platform;
+		return true;
+		}
+    return false;
+}
+
+bool checkCollision(Platform &platform){
+	if ((platform.position <= BOARD_OFFSET_X) ||
+		(platform.position + (PLATFORM_WIDTH * BLOCK_SIZE)) >= (BOARD_OFFSET_X + (BOARD_WIDTH * BLOCK_SIZE))){
+		return true;
+	}
+	return false;
 }

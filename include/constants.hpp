@@ -39,4 +39,12 @@ constexpr int UI_HEIGHT = 100;
 
 constexpr SDL_Color COLOR_BACKGROUND = {211, 211, 211, 255};
 
+constexpr SDL_Keycode KEY_MOVE_LEFT = SDLK_A;
+constexpr SDL_Keycode KEY_MOVE_RIGHT = SDLK_D;
+constexpr SDL_Keycode KEY_QUIT = SDLK_ESCAPE;
+
+constexpr float FRAME_TIME = 1.0f / 60.0f;
+constexpr float DAS_DELAY = 0.13f;        
+constexpr float DAS_SPEED = 0.03f;    
+
 #endif
