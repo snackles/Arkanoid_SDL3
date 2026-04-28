@@ -27,6 +27,11 @@ void handleKeyPress(GameData& game, SDL_Keycode key) {
 	case KEY_QUIT:
 		game.is_running = false;
 		break;
+	case KEY_START:
+		game.ball.state = 1;
+		game.ball.direction.x = 0;
+		game.ball.direction.y = -1;
+		break;
 	// case KEY_PAUSE:
 	// 	if (!game.game_over) {
 	// 		game.is_paused = !game.is_paused;

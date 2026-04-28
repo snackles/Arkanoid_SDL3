@@ -13,7 +13,8 @@ void renderGame(GameData &game){
 
 	drawBoard(game);
 	drawWalls(game);
-	drawPlatform(game);
+	drawPlatform(game, game.platform);
+	drawBall(game, game.ball);
 
 	SDL_RenderPresent(game.renderer);
 }
@@ -54,13 +55,22 @@ void drawWalls(GameData &game){
 	SDL_RenderTexture(game.renderer, game.textures.walls, NULL, &right_wall);
 }
 
-void drawPlatform(GameData &game){
-	SDL_FRect platform{
-		game.platform.position,
-		WINDOW_HEIGHT - (PLATFORM_HEIGHT * BLOCK_SIZE),
+void drawPlatform(GameData &game, Platform &platform){
+	SDL_FRect rect_platform{
+		platform.position.x,
+		platform.position.y,
 		PLATFORM_WIDTH * BLOCK_SIZE,
 		PLATFORM_HEIGHT * BLOCK_SIZE
 	};
-	SDL_RenderTexture(game.renderer, game.textures.platform, NULL, &platform);
+	SDL_RenderTexture(game.renderer, game.textures.platform, NULL, &rect_platform);
 }
 
+void drawBall(GameData &game, Ball &ball){
+	SDL_FRect rect_ball{
+		ball.position.x,
+		ball.position.y,
+		BALL_SIZE,
+		BALL_SIZE
+	};
+	SDL_RenderTexture(game.renderer, game.textures.ball, NULL, &rect_ball);
+}

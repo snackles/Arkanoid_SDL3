@@ -12,6 +12,11 @@ enum BlockType{
 	STRONG,
 };
 
+enum BallState{
+	BALL_ATTACHED,
+	BALL_FLYING
+};
+
 enum GameState{
 	STATE_MENU,
     STATE_PLAYING,
@@ -34,6 +39,8 @@ constexpr int WALL_WIDTH = 30;
 constexpr int PLATFORM_WIDTH = 8;
 constexpr int PLATFORM_HEIGHT = 4;
 
+constexpr int BALL_SIZE = 10;
+
 constexpr int UI_WIDHT = 600;
 constexpr int UI_HEIGHT = 100;
 
@@ -42,9 +49,12 @@ constexpr SDL_Color COLOR_BACKGROUND = {211, 211, 211, 255};
 constexpr SDL_Keycode KEY_MOVE_LEFT = SDLK_A;
 constexpr SDL_Keycode KEY_MOVE_RIGHT = SDLK_D;
 constexpr SDL_Keycode KEY_QUIT = SDLK_ESCAPE;
+constexpr SDL_Keycode KEY_START = SDLK_SPACE;
+
+constexpr float INITIAL_MOVE_SPEED = 1000.0f;
 
 constexpr float FRAME_TIME = 1.0f / 60.0f;
-constexpr float DAS_DELAY = 0.13f;        
-constexpr float DAS_SPEED = 0.03f;    
+constexpr float DAS_DELAY = 0.09f;        
+constexpr float DAS_SPEED = 0.04f;    
 
 #endif
