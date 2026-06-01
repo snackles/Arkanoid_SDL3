@@ -34,20 +34,22 @@ void handleKeyPress(GameData& game, SDL_Keycode key) {
 		game.is_running = false;
 		break;
 	case KEY_START:
-		game.ball.state = 1;
-		game.ball.direction.x = 0.5;
-		game.ball.direction.y = -1;
+		if (game.ball.state == 0){
+			game.ball.state = 1;
+			game.ball.direction.x = 0.5;
+			game.ball.direction.y = -1;
+		}
 		break;
-	// case KEY_PAUSE:
-	// 	if (!game.game_over) {
-	// 		game.is_paused = !game.is_paused;
-	// 	}
-	// 	break;
-	// case KEY_RESTART:
-	// 	if (game.game_over || game.is_paused) {
-	// 		reset_game(game);
-	// 	}
-	// 	break;
+	case KEY_PAUSE:
+		if (!game.game_over) {
+			game.is_paused = !game.is_paused;
+		}
+		break;
+	case KEY_RESTART:
+		if (game.game_over || game.is_paused) {
+			startGame(game);
+		}
+		break;
 	}
 }
 
@@ -76,7 +78,13 @@ void handleKeyboard(GameData& game, float dt) {
             float move_rate = left_was_pressed ? DAS_SPEED : 0.0f;
             if (left_timer >= move_rate) {
 				
-                if(movePlatform(game.platform, -1)){}
+                if(movePlatform(game.platform, -1)){
+
+					if (game.ball.state == 0){
+
+						game.ball.position.x -= 1 * GRID_BLOCK_SIZE;
+					}
+				}
 				
                 left_timer = 0.0f;
             }
@@ -98,7 +106,13 @@ void handleKeyboard(GameData& game, float dt) {
 			
             if (right_timer >= move_rate) {
 				
-				if(movePlatform(game.platform, 1)){}
+				if(movePlatform(game.platform, 1)){
+
+					if (game.ball.state == 0){
+
+						game.ball.position.x += 1 * GRID_BLOCK_SIZE;
+					}
+				}
 				
 				right_timer = 0.0f;
             }

@@ -30,59 +30,9 @@ bool initGame(GameData &game){
 	// Board initialize
 	game.board.width = BOARD_WIDTH;
 	game.board.height = BOARD_HEIGHT / 2;
-	game.board.grid.clear();
-	game.board.grid = std::vector<std::vector<int>>(
-		game.board.width, 
-        std::vector<int>(game.board.height, TYPE_NONE)
-		);
 
-	// Platform start position
-	game.platform.position.x = BOARD_OFFSET_X +
-		((BOARD_WIDTH * GRID_BLOCK_SIZE) / 2) -
-		((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2);
+	startGame(game);
 	
-	game.platform.position.y = BOARD_OFFSET_Y +
-		(BOARD_HEIGHT * GRID_BLOCK_SIZE) -
-		(PLATFORM_HEIGHT * GRID_BLOCK_SIZE); 
-
-	// Ball start position
-	game.ball.position.x = game.platform.position.x +
-		(PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2 -
-		BALL_SIZE / 2;
-	
-	game.ball.position.y = game.platform.position.y -
-		BALL_SIZE;
-
-	// Block generation
-	game.blocks.clear();
-	
-	static std::uniform_int_distribution<int> block_quantity(15, 25);
-	unsigned int number_of_blocks = block_quantity(gen);
-	
-	for (unsigned int i = 0; i < number_of_blocks; ++i){
-		
-		game.blocks.push_back(createBlock(game.board));
-	}
-	
-	for (unsigned int i = 0; i < number_of_blocks; ++i){
-		
-		Block block = game.blocks[i];
-
-		if (block.position.x < ((game.board.width / 2) - ((game.board.width / 2) % 5))){
-			
-			block.position.x = game.board.width - block.position.x - BLOCK_WIDTH;
-			game.blocks.push_back(block);
-		}
-	}
-
-	// GameData initialize
-	game.game_state = 1;
-	game.ball.state = 0;
-	game.game_over  = false;
-	game.is_paused  = false;
-	game.is_running = true;
-	game.move_speed = INITIAL_MOVE_SPEED;
-
 	return true;
 }
 
@@ -144,6 +94,62 @@ void destroyObjects(GameData &game){
 	SDL_DestroyWindow  (game.window);
 }
 
+void startGame(GameData &game){
+
+	game.board.grid.clear();
+	game.board.grid = std::vector<std::vector<int>>(
+		game.board.width, 
+        std::vector<int>(game.board.height, TYPE_NONE)
+		);
+
+	// Platform start position
+	game.platform.position.x = BOARD_OFFSET_X +
+		((BOARD_WIDTH * GRID_BLOCK_SIZE) / 2) -
+		((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2);
+	
+	game.platform.position.y = BOARD_OFFSET_Y +
+		(BOARD_HEIGHT * GRID_BLOCK_SIZE) -
+		(PLATFORM_HEIGHT * GRID_BLOCK_SIZE); 
+
+	// Ball start position
+	game.ball.position.x = game.platform.position.x +
+		(PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2 -
+		BALL_SIZE / 2;
+	
+	game.ball.position.y = game.platform.position.y -
+		BALL_SIZE;
+
+	// Block generation
+	game.blocks.clear();
+	
+	static std::uniform_int_distribution<int> block_quantity(15, 25);
+	unsigned int number_of_blocks = block_quantity(gen);
+	
+	for (unsigned int i = 0; i < number_of_blocks; ++i){
+		
+		game.blocks.push_back(createBlock(game.board));
+	}
+	
+	for (unsigned int i = 0; i < number_of_blocks; ++i){
+		
+		Block block = game.blocks[i];
+
+		if (block.position.x < ((game.board.width / 2) - ((game.board.width / 2) % 5))){
+			
+			block.position.x = game.board.width - block.position.x - BLOCK_WIDTH;
+			game.blocks.push_back(block);
+		}
+	}
+
+	// GameData initialize
+	game.game_state = 1;
+	game.ball.state = 0;
+	game.game_over  = false;
+	game.is_paused  = false;
+	game.is_running = true;
+	game.move_speed = INITIAL_MOVE_SPEED;	
+}
+
 Platform createPlatform(){
 	
 	Platform platform;
@@ -162,6 +168,7 @@ bool movePlatform(Platform &platform, int dx) {
 	if(!checkCollision(test_platform)){
 		
 		platform = test_platform;
+
 		return true;
 	}
     return false;
@@ -175,27 +182,71 @@ Ball createBall(Platform &platform){
 	return ball;
 }
 
-bool moveBall(Ball &ball, Platform &platform, float move_speed){
-	
+bool moveBall(GameData &game){
+
 	float offset;
 	float normalized;
 	float angle;
-	Ball test_ball = ball;
-	test_ball.position.x += ball.direction.x * move_speed;
-	test_ball.position.y += ball.direction.y * move_speed;
+	Ball test_ball = game.ball;
+	test_ball.position.x += game.ball.direction.x * game.move_speed;
+	test_ball.position.y += game.ball.direction.y * game.move_speed;
 
-	if(!checkCollision(platform, test_ball)){
-		
-		ball = test_ball;
-		return true;
+	for (unsigned int i = 0; i < game.blocks.size(); ++i){
+
+		if (checkCollision(game.blocks[i], test_ball)){
+
+			float eps = std::ceil(game.move_speed);
+
+			test_ball.position.y += eps;
+			if (!checkCollision(game.blocks[i], test_ball)){
+
+				game.ball.direction.y *= -1;		
+			}
+			test_ball.position.y -= eps;
+
+			test_ball.position.y -= eps;
+			if (!checkCollision(game.blocks[i], test_ball)){
+
+				game.ball.direction.y *= -1;
+			}
+			test_ball.position.y += eps;
+
+			test_ball.position.x -= eps;
+			if (!checkCollision(game.blocks[i], test_ball)){
+
+				game.ball.direction.x *= -1;
+			}
+			test_ball.position.x += eps;
+
+			test_ball.position.x += eps;
+			if (!checkCollision(game.blocks[i], test_ball)){
+
+				game.ball.direction.x *= -1;
+			}
+			test_ball.position.x -= eps;
+
+			if (game.blocks[i].type == DOUBLE_SHOT){
+
+				static std::uniform_int_distribution<int> block_type(1, 7);
+				game.blocks[i].type = block_type(gen);
+				return true;
+			}
+			
+			if (game.blocks[i].type != STRONG){
+				
+				game.blocks.erase(game.blocks.begin() + i);
+				--i;
+			}
+			return true;
+		}
 	}
 
-	if(checkCollision(platform, test_ball)){
-		
-		if (test_ball.position.y + BALL_SIZE >= platform.position.y){
+	if(checkCollision(game.platform, test_ball)){
+
+		if (test_ball.position.y + BALL_SIZE >= game.platform.position.y){
 			
-			offset = (ball.position.x + (BALL_SIZE / 2)) -
-				(platform.position.x + ((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2));
+			offset = (game.ball.position.x + (BALL_SIZE / 2)) -
+				(game.platform.position.x + ((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2));
 			
 			normalized = offset / ((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2);
 			
@@ -203,22 +254,34 @@ bool moveBall(Ball &ball, Platform &platform, float move_speed){
 			
 			angle = MAX_ANGLE * normalized;
 			
-			ball.direction.x = std::sin(angle);
-			ball.direction.y = -1 * std::cos(angle);
+			game.ball.direction.x = std::sin(angle);
+			game.ball.direction.y = -1 * std::cos(angle);
 			
 		} else if (test_ball.position.x + BALL_SIZE >=
-			(BOARD_OFFSET_X + (BOARD_WIDTH * BALL_SIZE))
+			(BOARD_OFFSET_X + (BOARD_WIDTH * GRID_BLOCK_SIZE))
 			||
 			(test_ball.position.x <= BOARD_OFFSET_X)){
 			
-			ball.direction.x *= -1;
+			game.ball.direction.x *= -1;
 			
 		} else {
 			
-			ball.direction.y *= -1;
+			game.ball.direction.y *= -1;
 		}
 		return true;
-	 }
+	}
+
+	if (game.ball.position.y + BALL_SIZE >
+		BOARD_OFFSET_Y + (BOARD_HEIGHT * GRID_BLOCK_SIZE)){
+
+		game.game_over = true;
+	}
+	
+	if(!checkCollision(game.platform, test_ball)){
+
+		game.ball = test_ball;
+		return true;
+	}
 	return false;
 }
 
@@ -283,7 +346,7 @@ bool checkCollision(Platform &platform){
 bool checkCollision(Platform &platform, Ball &ball){
 	
 	if((ball.position.x <= BOARD_OFFSET_X) ||
-	   (ball.position.x + BALL_SIZE >= (BOARD_OFFSET_X + (BOARD_WIDTH * BALL_SIZE))) ||
+	   (ball.position.x + BALL_SIZE >= (BOARD_OFFSET_X + (BOARD_WIDTH * GRID_BLOCK_SIZE))) ||
 	   (ball.position.y <= BOARD_OFFSET_Y) ||
 	   ((ball.position.y + BALL_SIZE >= platform.position.y) &&
 		(ball.position.x >= platform.position.x) &&
@@ -295,12 +358,34 @@ bool checkCollision(Platform &platform, Ball &ball){
 	return false;
 }
 
+bool checkCollision(Block &block, Ball &ball){
+
+	if (ball.position.x + BALL_SIZE >=
+		block.position.x * GRID_BLOCK_SIZE + BOARD_OFFSET_X &&
+		ball.position.y + BALL_SIZE >=
+		block.position.y * GRID_BLOCK_SIZE + BOARD_OFFSET_Y &&
+		ball.position.x <=
+		(block.position.x + BLOCK_WIDTH) * GRID_BLOCK_SIZE  + BOARD_OFFSET_X &&
+		ball.position.y <=
+		(block.position.y + BLOCK_HEIGHT) * GRID_BLOCK_SIZE + BOARD_OFFSET_Y){
+	
+		return true;
+	}
+
+	return false;
+}
+
 void updateGame(GameData &game, float dt){
+
+	if (game.game_over){
+  
+		game.game_state = STATE_GAME_OVER;
+	}
 	
 	game.move_speed = dt * 300.0f;
 
 	if (game.ball.state == 1){
 		
-		moveBall(game.ball, game.platform, game.move_speed);
+		moveBall(game);
 	}
 }

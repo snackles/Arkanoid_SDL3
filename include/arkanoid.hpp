@@ -82,10 +82,12 @@ struct GameData{
 bool initGame(GameData &game);
 void renderGame(GameData &game);
 void initTextures(GameData &game);
+void startGame(GameData &game);
 bool movePlatform(Platform &platform, int dx);
-bool moveBall(Ball &ball, Platform &platform, float move_speed);
+bool moveBall(GameData &game);
 bool checkCollision(Platform &platform);
 bool checkCollision(Platform &platform, Ball &ball);
+bool checkCollision(Block &block, Ball &ball);
 void updateGame(GameData &game, float dt);
 
 Platform createPlatform();

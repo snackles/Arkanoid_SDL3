@@ -69,6 +69,8 @@ constexpr SDL_Keycode KEY_MOVE_LEFT = SDLK_A;
 constexpr SDL_Keycode KEY_MOVE_RIGHT = SDLK_D;
 constexpr SDL_Keycode KEY_QUIT = SDLK_ESCAPE;
 constexpr SDL_Keycode KEY_START = SDLK_SPACE;
+constexpr SDL_Keycode KEY_PAUSE = SDLK_P;
+constexpr SDL_Keycode KEY_RESTART = SDLK_R;
 
 // Game states
 constexpr float INITIAL_MOVE_SPEED = 1000.0f;
