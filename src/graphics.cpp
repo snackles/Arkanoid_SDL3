@@ -23,6 +23,8 @@ void renderGame(GameData &game){
 		drawBlock(game, game.blocks[i]);
 	}
 
+	drawUI(game);
+	
 	SDL_RenderPresent(game.renderer);
 }
 
@@ -127,8 +129,28 @@ void drawBlock(GameData &game, Block &block){
 	}
 }
 
+void drawUI(GameData &game){
 
+	if (!game.textures.texture_score || !game.textures.texture_level) return;
 
+	float width, height;
+	SDL_GetTextureSize(game.textures.texture_score, &width, &height);
+	
+	SDL_FRect score_rect = {
+		10,
+		10,
+		width,
+		height
+	};
+	SDL_RenderTexture(game.renderer, game.textures.texture_score, NULL, &score_rect);
 
-
-
+	SDL_GetTextureSize(game.textures.texture_level, &width, &height);
+	
+	SDL_FRect level_rect = {
+		10,
+		50,
+		width,
+		height
+	};
+	SDL_RenderTexture(game.renderer, game.textures.texture_level, NULL, &level_rect);
+}

@@ -1,13 +1,15 @@
 #include "../include/arkanoid.hpp"
 
 #include "SDL3_image/SDL_image.h"
+#include <string>
 #include <vector>
 
 static std::mt19937 gen(std::random_device{}());
 
 bool initGame(GameData &game){
 	
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);	
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+	TTF_Init();
 
 	game.window = SDL_CreateWindow(
 		"Arkanoid",
@@ -27,13 +29,39 @@ bool initGame(GameData &game){
 	game.renderer = SDL_CreateRenderer(game.window, nullptr);
 	initTextures(game);
 
+	// Font initialize
+	game.font = TTF_OpenFont("../assets/Tetris.ttf", 24);
+
 	// Board initialize
-	game.board.width = BOARD_WIDTH;
+	game.board.width  = BOARD_WIDTH;
 	game.board.height = BOARD_HEIGHT / 2;
+
+	game.score = 0;
+	game.level = 0;
 
 	startGame(game);
 	
 	return true;
+}
+
+void updateText(GameData &game){
+
+	std::string score_text = "Score: " + std::to_string(game.score);
+	std::string level_text = "Level: " + std::to_string(game.level);
+
+	SDL_Surface* score_surface = TTF_RenderText_Blended(game.font,
+														score_text.c_str(),
+														score_text.length(),
+														TEXT_COLOR);
+	game.textures.texture_score = SDL_CreateTextureFromSurface(game.renderer, score_surface);
+	SDL_DestroySurface(score_surface);
+	
+	SDL_Surface* level_surface = TTF_RenderText_Blended(game.font,
+														level_text.c_str(),
+														level_text.length(),
+														TEXT_COLOR);
+	game.textures.texture_level = SDL_CreateTextureFromSurface(game.renderer, level_surface);
+	SDL_DestroySurface(level_surface);
 }
 
 void initTextures(GameData &game){
@@ -90,6 +118,8 @@ void destroyObjects(GameData &game){
 	SDL_DestroyTexture (game.textures.base_block_yellow);
 	SDL_DestroyTexture (game.textures.double_shot_block);
 	SDL_DestroyTexture (game.textures.strong_block);
+	SDL_DestroyTexture (game.textures.texture_score);
+	SDL_DestroyTexture (game.textures.texture_level);
 	SDL_DestroyRenderer(game.renderer);
 	SDL_DestroyWindow  (game.window);
 }
@@ -142,12 +172,17 @@ void startGame(GameData &game){
 	}
 
 	// GameData initialize
+	if (game.game_over){
+
+		game.score = 0;
+		game.level = 0;
+	}
 	game.game_state = 1;
 	game.ball.state = 0;
 	game.game_over  = false;
 	game.is_paused  = false;
 	game.is_running = true;
-	game.move_speed = INITIAL_MOVE_SPEED;	
+	game.move_speed = INITIAL_MOVE_SPEED;
 }
 
 Platform createPlatform(){
@@ -180,6 +215,53 @@ Ball createBall(Platform &platform){
 	ball.position.x = (PLATFORM_WIDTH - platform.position.x) * 5;
 	ball.position.y = (PLATFORM_HEIGHT - BALL_SIZE);
 	return ball;
+}
+
+Block createBlock(GameBoard &board){
+	
+	static std::uniform_int_distribution<int> block_type(1, 9);
+	Block block;
+	block.type = block_type(gen);
+
+	bool free_block = false;
+	while(!free_block){
+
+		std::uniform_int_distribution<int> block_position_x(0, board.width / 2);
+		std::uniform_int_distribution<int> block_position_y(0, board.height);
+		int x = block_position_x(gen);
+		int y = block_position_y(gen);
+		x     = x - (x % BLOCK_WIDTH);
+		y     = y - (y % BLOCK_HEIGHT);
+
+		free_block = true;
+		
+		for (int j = 0; j < BLOCK_WIDTH; ++j){
+			
+			for (int i = 0; i < BLOCK_HEIGHT; ++i) {
+				
+				if (board.grid[x + j][y + i] != TYPE_NONE){
+					
+					free_block = false;
+					break;
+				}
+			}
+			if (!free_block) break;
+		}
+
+		if (free_block) {
+			
+			for (int j = 0; j < BLOCK_WIDTH; ++j){
+				
+				for (int i = 0; i < BLOCK_HEIGHT; ++i){
+					
+					board.grid[x + j][y + i] = block.type;
+				}
+			}
+			block.position.x = x;
+            block.position.y = y;
+		}
+	}
+	return block;
 }
 
 bool moveBall(GameData &game){
@@ -229,12 +311,14 @@ bool moveBall(GameData &game){
 
 				static std::uniform_int_distribution<int> block_type(1, 7);
 				game.blocks[i].type = block_type(gen);
+				game.score += POINTS_PER_BLOCK;
 				return true;
 			}
 			
 			if (game.blocks[i].type != STRONG){
 				
 				game.blocks.erase(game.blocks.begin() + i);
+				game.score += POINTS_PER_BLOCK;
 				--i;
 			}
 			return true;
@@ -285,53 +369,6 @@ bool moveBall(GameData &game){
 	return false;
 }
 
-Block createBlock(GameBoard &board){
-	
-	static std::uniform_int_distribution<int> block_type(1, 9);
-	Block block;
-	block.type = block_type(gen);
-
-	bool free_block = false;
-	while(!free_block){
-
-		std::uniform_int_distribution<int> block_position_x(0, board.width / 2);
-		std::uniform_int_distribution<int> block_position_y(0, board.height);
-		int x = block_position_x(gen);
-		int y = block_position_y(gen);
-		x     = x - (x % BLOCK_WIDTH);
-		y     = y - (y % BLOCK_HEIGHT);
-
-		free_block = true;
-		
-		for (int j = 0; j < BLOCK_WIDTH; ++j){
-			
-			for (int i = 0; i < BLOCK_HEIGHT; ++i) {
-				
-				if (board.grid[x + j][y + i] != TYPE_NONE){
-					
-					free_block = false;
-					break;
-				}
-			}
-			if (!free_block) break;
-		}
-
-		if (free_block) {
-			
-			for (int j = 0; j < BLOCK_WIDTH; ++j){
-				
-				for (int i = 0; i < BLOCK_HEIGHT; ++i){
-					
-					board.grid[x + j][y + i] = block.type;
-				}
-			}
-			block.position.x = x;
-            block.position.y = y;
-		}
-	}
-	return block;
-}
-
 bool checkCollision(Platform &platform){
 	
 	if ((platform.position.x <= BOARD_OFFSET_X) ||
@@ -380,12 +417,29 @@ void updateGame(GameData &game, float dt){
 	if (game.game_over){
   
 		game.game_state = STATE_GAME_OVER;
+		return;
 	}
-	
+
 	game.move_speed = dt * 300.0f;
 
 	if (game.ball.state == 1){
 		
 		moveBall(game);
+	}
+
+	updateText(game);
+	int counter = 0;
+	for (unsigned int i = 0; i < game.blocks.size(); ++i){
+		
+		if (game.blocks[i].type > 0 && game.blocks[i].type < 9){
+
+			counter += 1;
+		}
+	}
+	
+	if (counter == 0){
+
+		game.level += 1;
+		startGame(game);
 	}
 }
