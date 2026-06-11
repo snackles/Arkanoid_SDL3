@@ -1,4 +1,7 @@
 #include "../include/arkanoid.hpp"
+#include "../include/constants.hpp"
+
+#include "SDL3/SDL.h"
 
 int main(){
 

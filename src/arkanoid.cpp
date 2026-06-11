@@ -1,8 +1,13 @@
 #include "../include/arkanoid.hpp"
+#include "../include/constants.hpp"
 
-#include "SDL3_image/SDL_image.h"
-#include <string>
+#include <cmath>
+#include <random>
 #include <vector>
+
+#include "SDL3/SDL.h"
+#include "SDL3_ttf/SDL_ttf.h"
+#include "SDL3_image/SDL_image.h"
 
 static std::mt19937 gen(std::random_device{}());
 
@@ -27,7 +32,7 @@ bool initGame(GameData &game){
     }
 	
 	game.renderer = SDL_CreateRenderer(game.window, nullptr);
-	initTextures(game);
+	initTextures(game.textures, game.renderer);
 
 	// Font initialize
 	game.font = TTF_OpenFont("../assets/Tetris.ttf", 24);
@@ -64,34 +69,34 @@ void updateText(GameData &game){
 	SDL_DestroySurface(level_surface);
 }
 
-void initTextures(GameData &game){
+void initTextures(Textures &textures, SDL_Renderer *renderer){
 	
-	game.textures.board_background         = loadTexture(game.renderer,
-														 "../assets/Test_background.png");
-	game.textures.walls                    = loadTexture(game.renderer,
-														 "../assets/Wall_block.png");
-	game.textures.platform                 = loadTexture(game.renderer,
-														 "../assets/Platform.png");
-	game.textures.ball                     = loadTexture(game.renderer,
-														 "../assets/Ball.png");
-	game.textures.base_block_azure         = loadTexture(game.renderer,
-														 "../assets/Base_block_azure.png");
-	game.textures.base_block_blue          = loadTexture(game.renderer,
-														"../assets/Base_block_blue.png");
-	game.textures.base_block_green         = loadTexture(game.renderer,
-														"../assets/Base_block_green.png");
-	game.textures.base_block_pink          = loadTexture(game.renderer,
-														"../assets/Base_block_pink.png");
-	game.textures.base_block_purple        = loadTexture(game.renderer,
-														"../assets/Base_block_purple.png");
-	game.textures.base_block_red           = loadTexture(game.renderer,
-														"../assets/Base_block_red.png");
-	game.textures.base_block_yellow        = loadTexture(game.renderer,
-														"../assets/Base_block_yellow.png");
-	game.textures.double_shot_block        = loadTexture(game.renderer,
-														 "../assets/Double_shot_block.png"); 
-	game.textures.strong_block             = loadTexture(game.renderer,
-														 "../assets/Strong_block.png"); 
+	textures.board_background  = loadTexture(renderer,
+											 "../assets/Test_background.png");
+	textures.walls             = loadTexture(renderer,
+											 "../assets/Wall_block.png");
+	textures.platform          = loadTexture(renderer,
+											 "../assets/Platform.png");
+	textures.ball              = loadTexture(renderer,
+											 "../assets/Ball.png");
+	textures.base_block_azure  = loadTexture(renderer,
+											 "../assets/Base_block_azure.png");
+	textures.base_block_blue   = loadTexture(renderer,
+											 "../assets/Base_block_blue.png");
+	textures.base_block_green  = loadTexture(renderer,
+											 "../assets/Base_block_green.png");
+	textures.base_block_pink   = loadTexture(renderer,
+											 "../assets/Base_block_pink.png");
+	textures.base_block_purple = loadTexture(renderer,
+											 "../assets/Base_block_purple.png");
+	textures.base_block_red    = loadTexture(renderer,
+											 "../assets/Base_block_red.png");
+	textures.base_block_yellow = loadTexture(renderer,
+											 "../assets/Base_block_yellow.png");
+	textures.double_shot_block = loadTexture(renderer,
+											 "../assets/Double_shot_block.png"); 
+	textures.strong_block      = loadTexture(renderer,
+											 "../assets/Strong_block.png"); 
 }
 	
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path){
@@ -133,21 +138,10 @@ void startGame(GameData &game){
 		);
 
 	// Platform start position
-	game.platform.position.x = BOARD_OFFSET_X +
-		((BOARD_WIDTH * GRID_BLOCK_SIZE) / 2) -
-		((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2);
-	
-	game.platform.position.y = BOARD_OFFSET_Y +
-		(BOARD_HEIGHT * GRID_BLOCK_SIZE) -
-		(PLATFORM_HEIGHT * GRID_BLOCK_SIZE); 
+	postPlatform(game.platform); 
 
 	// Ball start position
-	game.ball.position.x = game.platform.position.x +
-		(PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2 -
-		BALL_SIZE / 2;
-	
-	game.ball.position.y = game.platform.position.y -
-		BALL_SIZE;
+	postBall(game.platform, game.ball);
 
 	// Block generation
 	game.blocks.clear();
@@ -183,38 +177,23 @@ void startGame(GameData &game){
 	game.is_paused  = false;
 	game.is_running = true;
 	game.move_speed = INITIAL_MOVE_SPEED;
+	game.platform.velocity_x = 0.0f;
 }
 
-Platform createPlatform(){
-	
-	Platform platform;
+void postPlatform(Platform &platform){
 	
 	platform.position.x = ((BOARD_WIDTH * GRID_BLOCK_SIZE) / 2) -
 		((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2) + WALL_WIDTH;
-	
-	return platform;
+	platform.position.y = BOARD_OFFSET_Y +
+		(BOARD_HEIGHT * GRID_BLOCK_SIZE) -
+		(PLATFORM_HEIGHT * GRID_BLOCK_SIZE); 	
 }
 
-bool movePlatform(Platform &platform, int dx) {
+void postBall(Platform &platform, Ball &ball){
 	
-	Platform test_platform = platform;
-	test_platform.position.x += dx * GRID_BLOCK_SIZE;
-
-	if(!checkCollision(test_platform)){
-		
-		platform = test_platform;
-
-		return true;
-	}
-    return false;
-}
-
-Ball createBall(Platform &platform){
-	
-	Ball ball;
-	ball.position.x = (PLATFORM_WIDTH - platform.position.x) * 5;
-	ball.position.y = (PLATFORM_HEIGHT - BALL_SIZE);
-	return ball;
+	ball.position.x = platform.position.x + ((PLATFORM_WIDTH * GRID_BLOCK_SIZE) / 2) -
+		(BALL_SIZE / 2);
+	ball.position.y = platform.position.y - BALL_SIZE;
 }
 
 Block createBlock(GameBoard &board){
@@ -264,20 +243,23 @@ Block createBlock(GameBoard &board){
 	return block;
 }
 
-bool moveBall(GameData &game){
+bool moveBall(GameData &game, float dt){
 
 	float offset;
 	float normalized;
 	float angle;
 	Ball test_ball = game.ball;
-	test_ball.position.x += game.ball.direction.x * game.move_speed;
-	test_ball.position.y += game.ball.direction.y * game.move_speed;
+
+	float step = BALL_SPEED * dt;
+	
+	test_ball.position.x += game.ball.direction.x * step;
+	test_ball.position.y += game.ball.direction.y * step;
 
 	for (unsigned int i = 0; i < game.blocks.size(); ++i){
 
 		if (checkCollision(game.blocks[i], test_ball)){
 
-			float eps = std::ceil(game.move_speed);
+			float eps = std::ceil(step);
 
 			test_ball.position.y += eps;
 			if (!checkCollision(game.blocks[i], test_ball)){
@@ -420,11 +402,11 @@ void updateGame(GameData &game, float dt){
 		return;
 	}
 
-	game.move_speed = dt * 300.0f;
-
-	if (game.ball.state == 1){
+	updatePlatform(game, dt);
+	
+	if (game.ball.state == BALL_FLYING){
 		
-		moveBall(game);
+		moveBall(game, dt);
 	}
 
 	updateText(game);
@@ -441,5 +423,24 @@ void updateGame(GameData &game, float dt){
 
 		game.level += 1;
 		startGame(game);
+	}
+}
+
+void updatePlatform(GameData &game, float dt){
+
+	float displacement = game.platform.velocity_x * dt;
+	if (displacement == 0.0f) { return; }
+
+	Platform test_platform    = game.platform;
+	test_platform.position.x += displacement;
+
+	if (!checkCollision(test_platform)){
+
+		game.platform = test_platform;
+
+		if (game.ball.state == BALL_ATTACHED){
+
+			game.ball.position.x += displacement;
+		}
 	}
 }

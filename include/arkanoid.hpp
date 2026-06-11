@@ -1,11 +1,8 @@
-#include "constants.hpp"
-
-#include <iostream>
-#include <cmath>
-#include <random>
-#include <chrono>
 #include <vector>
-#include <string>
+
+#include "SDL3/SDL.h"
+#include "SDL3_ttf/SDL_ttf.h"
+#include "SDL3_image/SDL_image.h"
 
 struct Point{
 	
@@ -23,6 +20,7 @@ struct Ball{
 struct Platform{
 	
     Point position;
+	float velocity_x;
 };
 
 struct Block{
@@ -62,6 +60,7 @@ struct GameData{
 	SDL_Window   *window;
 	SDL_Renderer *renderer;
 	TTF_Font     *font;
+	SDL_Event     event;
 	
 	Textures  textures;
 	GameBoard board;
@@ -84,37 +83,37 @@ struct GameData{
     float    delta_time;
 };
 
-bool initGame(GameData &game);
-void renderGame(GameData &game);
-void initTextures(GameData &game);
+bool initGame    (GameData &game);
+void renderGame  (GameData &game);
+void initTextures(Textures &textures, SDL_Renderer *renderer);
 
-void startGame(GameData &game);
-bool movePlatform(Platform &platform, int dx);
-bool moveBall(GameData &game);
+void startGame   (GameData &game);
+void postPlatform(Platform &platform);
+void postBall    (Platform &platform, Ball &ball);
+bool moveBall    (GameData &game, float dt);
 
 bool checkCollision(Platform &platform);
 bool checkCollision(Platform &platform, Ball &ball);
 bool checkCollision(Block &block, Ball &ball);
 
-void updateGame(GameData &game, float dt);
-void updateText(GameData &game);
+void updateGame    (GameData &game, float dt);
+void updateText    (GameData &game);
+void updatePlatform(GameData &game, float dt);
 
-Platform createPlatform();
-Ball     createBall(Platform &platform);
-Block    createBlock(GameBoard &board);
+Block createBlock (GameBoard &board);
 
-void drawBoard(GameData &game);
-void drawWalls(GameData &game);
-void drawPlatform(GameData &game, Platform &platform);
-void drawBall(GameData &game, Ball &ball);
-void drawBlock(GameData &game, Block &block);
-void drawUI(GameData &game);
+void drawBoard   (SDL_Renderer *renderer, Textures &textures);
+void drawWalls   (SDL_Renderer *renderer, Textures &textures);
+void drawPlatform(SDL_Renderer *renderer, Textures &textures, Platform &platform);
+void drawBall    (SDL_Renderer *renderer, Textures &textures, Ball &ball);
+void drawBlock   (SDL_Renderer *renderer, Textures &textures, Block &block);
+void drawUI      (SDL_Renderer *renderer, Textures &textures);
 
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path);
-void destroyObjects(GameData &game);
+void destroyObjects     (GameData &game);
 
-void processEvent(GameData &game);
-void handleKeyPress(GameData& game, SDL_Keycode key);
+void processEvent    (GameData &game);
+void handleKeyPress  (GameData& game, SDL_Keycode key);
 void handleKeyRelease(GameData& game, SDL_Keycode key);
-void handleKeyboard(GameData& game, float dt);
+void handleKeyboard  (GameData& game);
 

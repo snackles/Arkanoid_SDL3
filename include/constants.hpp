@@ -79,6 +79,8 @@ constexpr SDL_Keycode KEY_RESTART    = SDLK_R;
 
 // Game states
 constexpr float INITIAL_MOVE_SPEED = 1000.0f;
+constexpr float PLATFORM_SPEED     = 400.0f;
+constexpr float BALL_SPEED         = 300.0f;
 
 constexpr float FRAME_TIME = 1.0f / 60.0f;
 constexpr float DAS_DELAY  = 0.05f;        

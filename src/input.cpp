@@ -1,30 +1,33 @@
 #include "../include/arkanoid.hpp"
+#include "../include/constants.hpp"
 
-SDL_Event event;
+#include "SDL3/SDL.h"
+#include "SDL3_ttf/SDL_ttf.h"
+#include "SDL3_image/SDL_image.h"
 
 void processEvent(GameData &game){
-	
-    while (SDL_PollEvent(&event)) {
+
+    while (SDL_PollEvent(&game.event)) {
 		
-        switch (event.type) {
+        switch (game.event.type) {
 			
 		case SDL_EVENT_QUIT:
 			game.is_running = false;
 			break;
 		case SDL_EVENT_KEY_DOWN:
-			handleKeyPress(game, event.key.key);
+			handleKeyPress(game, game.event.key.key);
 			break;
 		case SDL_EVENT_KEY_UP:
-			handleKeyRelease(game, event.key.key);
+			handleKeyRelease(game, game.event.key.key);
 			break;
 		}
 	}
-	handleKeyboard(game, game.delta_time);
+	handleKeyboard(game);
 }
 
 void handleKeyPress(GameData& game, SDL_Keycode key) {
 	
-    if (event.key.repeat) {
+    if (game.event.key.repeat) {
 		
         return;
     }
@@ -59,70 +62,23 @@ void handleKeyRelease(GameData& game, SDL_Keycode key) {
     (void)key;
 }
 
-void handleKeyboard(GameData& game, float dt) {
+void handleKeyboard(GameData& game) {
 	
     if (game.is_paused || game.game_over) return;
-
-    static float left_timer       = 0.0f;
-    static float right_timer      = 0.0f;
-
-    static bool left_was_pressed  = false;
-    static bool right_was_pressed = false;
     
 	const bool* keystate = SDL_GetKeyboardState(nullptr);
 
+	float desired_velosity = 0.0f;
     if (keystate[SDL_SCANCODE_A]) {
 		
-        if (!left_was_pressed || left_timer >= DAS_DELAY) {
+		desired_velosity -= PLATFORM_SPEED;
 			
-            float move_rate = left_was_pressed ? DAS_SPEED : 0.0f;
-            if (left_timer >= move_rate) {
-				
-                if(movePlatform(game.platform, -1)){
-
-					if (game.ball.state == 0){
-
-						game.ball.position.x -= 1 * GRID_BLOCK_SIZE;
-					}
-				}
-				
-                left_timer = 0.0f;
-            }
-        }
-        left_timer      += dt;
-        left_was_pressed = true;
-		
-    } else {
-		
-        left_was_pressed = false;
-        left_timer       = 0.0f;
-    }
-    
+	}
+	
     if (keystate[SDL_SCANCODE_D]) {
 		
-        if (!right_was_pressed || right_timer >= DAS_DELAY) {
-			
-            float move_rate = right_was_pressed ? DAS_SPEED : 0.0f;
-			
-            if (right_timer >= move_rate) {
-				
-				if(movePlatform(game.platform, 1)){
-
-					if (game.ball.state == 0){
-
-						game.ball.position.x += 1 * GRID_BLOCK_SIZE;
-					}
-				}
-				
-				right_timer = 0.0f;
-            }
-        }
-        right_timer      += dt;
-        right_was_pressed = true;
-		
-    } else {
-		
-        right_was_pressed = false;
-        right_timer       = 0.0f;
+		desired_velosity += PLATFORM_SPEED;
     }
+
+	game.platform.velocity_x = desired_velosity;
 }
